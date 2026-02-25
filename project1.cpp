@@ -52,10 +52,10 @@ void displaySystemStatus(const vector<PCB *> &processes) {
     }
 
     if (i < processes.size() - 1) {
-      cout << "\n";
+      cout << endl;
     }
   }
-  cout << "-- \n";
+  cout << "--" << endl;
 }
 
 int main() {
@@ -67,7 +67,7 @@ int main() {
   queue<PCB *> ready_queue;
 
   // Set New Processes
-  cout << "New processes:\n";
+  cout << "New processes:" << endl;
   for (int i = 0; i < num_processes; ++i) {
     int id, work;
     cin >> id >> work;
@@ -75,9 +75,9 @@ int main() {
     all_processes.push_back(p);
     cout << "P" << p->getPID();
     if (i < num_processes - 1)
-      cout << "\n";
+      cout << endl;
   }
-  cout << " -- \n";
+  cout << " --" << endl;
 
   // Set all to ready
   for (auto p : all_processes) {
@@ -91,7 +91,7 @@ int main() {
     PCB *current = ready_queue.front();
     ready_queue.pop();
 
-    cout << "Kernel loading P" << current->getPID() << " -- \n";
+    cout << "Kernel loading P" << current->getPID() << " --" << endl;
     current->setState(RUNNING);
     displaySystemStatus(all_processes);
 
@@ -105,7 +105,7 @@ int main() {
     if (current->getRemainingWork() > 0) {
       current->setState(READY);
       ready_queue.push(current);
-      cout << "\n";
+      cout << endl;
 
       if (!ready_queue.empty()) {
 
@@ -120,9 +120,9 @@ int main() {
           }
         }
         if (!any_active) {
-          cout << " -- \n";
+          cout << " --" << endl;
         } else {
-          cout << "\n";
+          cout << endl;
         }
       }
     }
