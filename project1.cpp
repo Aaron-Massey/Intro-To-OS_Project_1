@@ -55,7 +55,7 @@ void displaySystemStatus(const vector<PCB *> &processes) {
       cout << endl;
     }
   }
-  cout << "--" << endl;
+  cout << endl << "--" << endl;
 }
 
 int main() {
@@ -77,7 +77,7 @@ int main() {
     if (i < num_processes - 1)
       cout << endl;
   }
-  cout << " --" << endl;
+  cout << endl << "--" << endl;
 
   // Set all to ready
   for (auto p : all_processes) {
@@ -91,7 +91,7 @@ int main() {
     PCB *current = ready_queue.front();
     ready_queue.pop();
 
-    cout << "Kernel loading P" << current->getPID() << " --" << endl;
+    cout << "Kernel loading P" << current->getPID() << endl << "--" << endl;
     current->setState(RUNNING);
     displaySystemStatus(all_processes);
 
@@ -120,7 +120,7 @@ int main() {
           }
         }
         if (!any_active) {
-          cout << " --" << endl;
+          cout << endl << "--" << endl;
         } else {
           cout << endl;
         }
