@@ -57,6 +57,16 @@ void displaySystemStatus(const vector<PCB *> &processes) {
   }
   cout << endl << "--" << endl;
 }
+bool doesIdExist(const vector<PCB *> &processes, int id) {
+  int tempID;
+  for (int i = 0; i < processes.size(); i++) {
+    tempID = processes[i]->getPID();
+    if (tempID == id) {
+      return true;
+    }
+  }
+  return false;
+}
 
 int main() {
   int quantum, num_processes;
@@ -68,7 +78,7 @@ int main() {
     cout << "Invalid Quantum";
     return 1;
   }
-  if (num_processes < 0) {
+  if (num_processes < 1) {
     cout << "Cannot have negative processes";
     return 1;
   }
@@ -84,12 +94,16 @@ int main() {
       cout << "Cannot have a negative id";
       return 1;
     }
-    if (work < 0) {
+    if (work < 1) {
       cout << "cannot have negative work";
       return 1;
     }
     if (cin.fail()) {
       cout << "ID and Work must be integers";
+      return 1;
+    }
+    if (doesIdExist(all_processes, id)) {
+      cout << "Cannot have repeated ID values";
       return 1;
     }
 
