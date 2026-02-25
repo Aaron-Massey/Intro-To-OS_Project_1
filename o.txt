@@ -1,0 +1,22 @@
+New processes:
+P1 
+--
+P1 Ready, pc 1
+--
+Kernel loading P1
+--
+P1 Running
+--
+Kernel saving P1
+Kernel loading P1
+--
+P1 Running
+--
+Kernel saving P1
+Kernel loading P1
+--
+P1 Running
+--
+Kernel saving P1
+--
+P1 Terminated
