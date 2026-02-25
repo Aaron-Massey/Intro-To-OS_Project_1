@@ -32,7 +32,7 @@ public:
 };
 void displaySystemStatus(const vector<PCB *> &processes) {
   for (size_t i = 0; i < processes.size(); i++) {
-    cout << "P" << processes[i]->getPID() << " ";
+    cout << "P" << processes[i]->getPID();
     State s = processes[i]->getState();
 
     switch (s) {
@@ -113,7 +113,9 @@ int main() {
     PCB *current = ready_queue.front();
     ready_queue.pop();
 
-    cout << "Kernel loading P" << current->getPID() << endl << "--" << endl;
+    cout << "Kernel loading P" << current->getPID() << endl;
+    cout << "--" << endl;
+
     current->setState(RUNNING);
     displaySystemStatus(all_processes);
 
@@ -130,11 +132,8 @@ int main() {
     } else {
       current->setState(TERMINATED);
     }
-    cout << "--" << endl;
-    displaySystemStatus(all_processes);
 
     if (!ready_queue.empty() || current->getState() == TERMINATED) {
-
     } else {
 
       bool any_active = false;
