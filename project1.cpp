@@ -37,7 +37,7 @@ void displaySystemStatus(const vector<PCB *> &processes) {
 
     switch (s) {
     case READY:
-      cout << "Ready, PC: " << processes[i]->getPC();
+      cout << "Ready, pc " << processes[i]->getPC();
       break;
     case RUNNING:
       cout << "Running";
@@ -61,7 +61,16 @@ void displaySystemStatus(const vector<PCB *> &processes) {
 int main() {
   int quantum, num_processes;
   if (!(cin >> quantum >> num_processes)) {
-    return 0;
+    cout << "No valid inputs";
+    return 1;
+  }
+  if (quantum < 1) {
+    cout << "Invalid Quantum";
+    return 1;
+  }
+  if (num_processes < 0) {
+    cout << "Cannot have negative processes";
+    return 1;
   }
   vector<PCB *> all_processes;
   queue<PCB *> ready_queue;
@@ -71,6 +80,19 @@ int main() {
   for (int i = 0; i < num_processes; ++i) {
     int id, work;
     cin >> id >> work;
+    if (id < 0) {
+      cout << "Cannot have a negative id";
+      return 1;
+    }
+    if (work < 0) {
+      cout << "cannot have negative work";
+      return 1;
+    }
+    if (cin.fail()) {
+      cout << "ID and Work must be integers";
+      return 1;
+    }
+
     PCB *p = new PCB(id, work);
     all_processes.push_back(p);
     cout << "P" << p->getPID();
@@ -100,33 +122,35 @@ int main() {
                         : quantum;
     current->execute(work_done);
 
-    cout << "Kernel saving P" << current->getPID();
+    cout << "Kernel saving P" << current->getPID() << endl;
 
     if (current->getRemainingWork() > 0) {
       current->setState(READY);
       ready_queue.push(current);
-      cout << endl;
+    } else {
+      current->setState(TERMINATED);
+    }
+    cout << "--" << endl;
+    displaySystemStatus(all_processes);
 
-      if (!ready_queue.empty()) {
+    if (!ready_queue.empty() || current->getState() == TERMINATED) {
 
+    } else {
+
+      bool any_active = false;
+      for (auto p : all_processes) {
+        if (p->getState() != TERMINATED) {
+          any_active = true;
+        }
+      }
+      if (!any_active) {
+        cout << endl << "--" << endl;
       } else {
-
-        current->setState(TERMINATED);
-
-        bool any_active = false;
-        for (auto p : all_processes) {
-          if (p->getState() != TERMINATED) {
-            any_active = true;
-          }
-        }
-        if (!any_active) {
-          cout << endl << "--" << endl;
-        } else {
-          cout << endl;
-        }
+        cout << endl;
       }
     }
   }
+
   for (auto p : all_processes) {
     delete p;
   }
