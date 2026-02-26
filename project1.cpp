@@ -31,11 +31,14 @@ public:
     pc += units;
   }
 };
-void displaySystemStatus(const vector<PCB *> &processes) {
+void displaySystemStatus(vector<PCB *> &processes) {
   for (size_t i = 0; i < processes.size(); i++) {
-    cout << "P" << processes[i]->getPID() << " ";
     State s = processes[i]->getState();
+    if (s == NEW) {
+      continue;
+    }
 
+    cout << "P" << processes[i]->getPID() << " ";
     switch (s) {
     case READY:
       cout << "Ready, pc " << processes[i]->getPC();
@@ -49,18 +52,22 @@ void displaySystemStatus(const vector<PCB *> &processes) {
     default:
       break;
     }
-
-    if (i < processes.size() - 1) {
-      cout << endl;
-    }
+    cout << endl;
   }
-  cout << endl << "--" << endl;
+  // Logic: Remove after being displayed once
+  auto it = remove_if(processes.begin(), processes.end(), [](PCB *p) {
+    if (p->getState() == TERMINATED) {
+      delete p; // Clean up memory
+      return true;
+    }
+    return false;
+  });
+  processes.erase(it, processes.end());
 }
+
 bool doesIdExist(const vector<PCB *> &processes, int id) {
-  int tempID;
-  for (int i = 0; i < processes.size(); i++) {
-    tempID = processes[i]->getPID();
-    if (tempID == id) {
+  for (auto p : processes) {
+    if (p->getPID() == id) {
       return true;
     }
   }
@@ -69,6 +76,7 @@ bool doesIdExist(const vector<PCB *> &processes, int id) {
 
 int main() {
   int quantum, num_processes;
+  // Validate Inputs
   if (!(cin >> quantum >> num_processes)) {
     cout << "No valid inputs";
     return 1;
@@ -81,6 +89,8 @@ int main() {
     cout << "Cannot have negative processes";
     return 1;
   }
+
+  // Create datastructures
   vector<PCB *> all_processes;
   queue<PCB *> ready_queue;
 
@@ -89,6 +99,8 @@ int main() {
   for (int i = 0; i < num_processes; ++i) {
     int id, work;
     cin >> id >> work;
+
+    // Validate Inputs
     if (id < 0) {
       cout << "Cannot have a negative id";
       return 1;
@@ -106,13 +118,12 @@ int main() {
       return 1;
     }
 
+    // Create PCBs
     PCB *p = new PCB(id, work);
     all_processes.push_back(p);
-    cout << "P" << p->getPID();
-    if (i < num_processes - 1)
-      cout << endl;
+    cout << "P" << p->getPID() << endl;
   }
-  cout << endl << "--" << endl;
+  cout << "--" << endl;
 
   // Set all to ready
   for (auto p : all_processes) {
@@ -120,57 +131,43 @@ int main() {
     ready_queue.push(p);
   }
   displaySystemStatus(all_processes);
+  cout << "--" << endl;
 
   // Scheduler
   while (!ready_queue.empty()) {
     PCB *current = ready_queue.front();
     ready_queue.pop();
 
+    // Context Switch load
     cout << "Kernel loading P" << current->getPID() << endl;
     cout << "--" << endl;
 
+    // Set process to running and display
     current->setState(RUNNING);
     displaySystemStatus(all_processes);
+    cout << "--" << endl;
 
-    // Remove terminated processes from the list
-    auto it = remove_if(all_processes.begin(), all_processes.end(), [](PCB *p) {
-      if (p->getState() == TERMINATED) {
-        delete p;
-        return true;
-      }
-      return false;
-    });
-    all_processes.erase(it, all_processes.end());
-
+    // Execute Work
     int work_done = (current->getRemainingWork() < quantum)
                         ? current->getRemainingWork()
                         : quantum;
     current->execute(work_done);
 
+    // Context Switch Save
     cout << "Kernel saving P" << current->getPID() << endl;
 
+    // Update State
     if (current->getRemainingWork() > 0) {
       current->setState(READY);
       ready_queue.push(current);
     } else {
       current->setState(TERMINATED);
     }
+  }
 
-    if (!ready_queue.empty() || current->getState() == TERMINATED) {
-    } else {
-
-      bool any_active = false;
-      for (auto p : all_processes) {
-        if (p->getState() != TERMINATED) {
-          any_active = true;
-        }
-      }
-      if (!any_active) {
-        cout << endl << "--" << endl;
-      } else {
-        cout << endl;
-      }
-    }
+  if (!all_processes.empty()) {
+    cout << "--" << endl;
+    displaySystemStatus(all_processes);
   }
 
   for (auto p : all_processes) {
