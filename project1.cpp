@@ -4,10 +4,11 @@
 #include <vector>
 
 using namespace std;
-
+// Process States
 enum State { NEW, READY, RUNNING, TERMINATED };
 
 class PCB {
+  // Store the process ID, program counter, state, and remaining units
 private:
   int pid;
   int pc;
@@ -15,6 +16,7 @@ private:
   int remaining_work;
 
 public:
+  // Constructor for Process Control Blocks
   PCB(int id, int work) : pid(id), pc(1), state(NEW), remaining_work(work) {}
 
   // Getters
@@ -26,19 +28,24 @@ public:
   // Setters
   void setState(State s) { state = s; }
 
+  // Simulate work
   void execute(int units) {
     remaining_work -= units;
     pc += units;
   }
 };
+
+// Display the process and scheduler information
 void displaySystemStatus(vector<PCB *> &processes) {
   for (size_t i = 0; i < processes.size(); i++) {
     State s = processes[i]->getState();
     if (s == NEW) {
       continue;
     }
-
+    // Print the current process ID
     cout << "P" << processes[i]->getPID() << " ";
+
+    // Print the process state
     switch (s) {
     case READY:
       cout << "Ready, pc " << processes[i]->getPC();
@@ -54,7 +61,7 @@ void displaySystemStatus(vector<PCB *> &processes) {
     }
     cout << endl;
   }
-  // Logic: Remove after being displayed once
+  // Remove the displayed process if it is in the TERMINATED state
   auto it = remove_if(processes.begin(), processes.end(), [](PCB *p) {
     if (p->getState() == TERMINATED) {
       delete p; // Clean up memory
@@ -65,6 +72,7 @@ void displaySystemStatus(vector<PCB *> &processes) {
   processes.erase(it, processes.end());
 }
 
+// Returns if the id already exists in the process vector
 bool doesIdExist(const vector<PCB *> &processes, int id) {
   for (auto p : processes) {
     if (p->getPID() == id) {
@@ -75,6 +83,7 @@ bool doesIdExist(const vector<PCB *> &processes, int id) {
 }
 
 int main() {
+  // Initialize the work per run and number of processes
   int quantum, num_processes;
   // Validate Inputs
   if (!(cin >> quantum >> num_processes)) {
@@ -94,7 +103,7 @@ int main() {
   vector<PCB *> all_processes;
   queue<PCB *> ready_queue;
 
-  // Set New Processes
+  // Input New Processes
   cout << "New processes:" << endl;
   for (int i = 0; i < num_processes; ++i) {
     int id, work;
@@ -118,14 +127,14 @@ int main() {
       return 1;
     }
 
-    // Create PCBs
+    // Create PCBs and adds them to the queue
     PCB *p = new PCB(id, work);
     all_processes.push_back(p);
     cout << "P" << p->getPID() << endl;
   }
   cout << "--" << endl;
 
-  // Set all to ready
+  // Set the processes to READY
   for (auto p : all_processes) {
     p->setState(READY);
     ready_queue.push(p);
@@ -135,6 +144,7 @@ int main() {
 
   // Scheduler
   while (!ready_queue.empty()) {
+    // Point to the current process
     PCB *current = ready_queue.front();
     ready_queue.pop();
 
@@ -147,7 +157,8 @@ int main() {
     displaySystemStatus(all_processes);
     cout << "--" << endl;
 
-    // Execute Work
+    // Execute Work (Set the work to be done to the quantum or the rest of the
+    // work remaining, depending on what is smaller).
     int work_done = (current->getRemainingWork() < quantum)
                         ? current->getRemainingWork()
                         : quantum;
@@ -156,7 +167,7 @@ int main() {
     // Context Switch Save
     cout << "Kernel saving P" << current->getPID() << endl;
 
-    // Update State
+    // Update State depending on how much work is left
     if (current->getRemainingWork() > 0) {
       current->setState(READY);
       ready_queue.push(current);
@@ -164,12 +175,12 @@ int main() {
       current->setState(TERMINATED);
     }
   }
-
+  // If there are processes left, print them
   if (!all_processes.empty()) {
     cout << "--" << endl;
     displaySystemStatus(all_processes);
   }
-
+  // If there are somehow any remaining, delete them
   for (auto p : all_processes) {
     delete p;
   }
