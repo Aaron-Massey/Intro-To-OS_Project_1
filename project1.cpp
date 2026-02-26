@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <queue>
 #include <vector>
@@ -32,7 +33,7 @@ public:
 };
 void displaySystemStatus(const vector<PCB *> &processes) {
   for (size_t i = 0; i < processes.size(); i++) {
-    cout << "P" << processes[i]->getPID();
+    cout << "P" << processes[i]->getPID() << " ";
     State s = processes[i]->getState();
 
     switch (s) {
@@ -44,8 +45,6 @@ void displaySystemStatus(const vector<PCB *> &processes) {
       break;
     case TERMINATED:
       cout << "Terminated";
-      break;
-    case NEW:
       break;
     default:
       break;
@@ -132,6 +131,16 @@ int main() {
 
     current->setState(RUNNING);
     displaySystemStatus(all_processes);
+
+    // Remove terminated processes from the list
+    auto it = remove_if(all_processes.begin(), all_processes.end(), [](PCB *p) {
+      if (p->getState() == TERMINATED) {
+        delete p;
+        return true;
+      }
+      return false;
+    });
+    all_processes.erase(it, all_processes.end());
 
     int work_done = (current->getRemainingWork() < quantum)
                         ? current->getRemainingWork()
